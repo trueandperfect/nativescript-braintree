@@ -39,7 +39,9 @@ export class Braintree extends Observable {
 
         let clientTokenMethod = dropInRequest.getClass().getMethod("clientToken", [java.lang.String.class]);
 
-        dropInRequest.collectDeviceData(false);
+        if (options.collectDeviceData) {
+            dropInRequest.collectDeviceData(true);
+        }
 
         if (options.requestThreeDSecureVerification && options.amount) {
             const ThreeDSecureRequest = com.braintreepayments.api.models.ThreeDSecureRequest;
@@ -52,14 +54,9 @@ export class Braintree extends Observable {
                 .threeDSecureRequest(threeDSecureRequest);
         }
 
-        // Enable Google Pay if requested
         if (options.enableGooglePay) {
             t.enableGooglePay(dropInRequest, options);
         }
-
-        // Disable the card payment method explicitly
-        dropInRequest.disableCard();
-        dropInRequest.disablePayPal();
 
         clientTokenMethod.invoke(dropInRequest, [token]);
         let dIRIntent = getIntentMethod.invoke(dropInRequest, [activity]);
@@ -107,7 +104,7 @@ export class Braintree extends Observable {
                 t.output.status = 'success';
                 t.output.msg = 'Got Payment Nonce Value';
                 t.output.nonce = paymentMethodNonce;
-                // t.output.deviceInfo = result.getDeviceData();
+                t.output.deviceInfo = result.getDeviceData();
                 t.output.paymentMethodType = result.getPaymentMethodType().getCanonicalName();
 
                 setTimeout(function () {
@@ -173,3 +170,4 @@ export interface BrainTreeOptions {
     currencyCode?: string;
     vaultManager?: boolean;
 }
+
